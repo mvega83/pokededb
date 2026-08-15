@@ -3,7 +3,7 @@ import { IsInt, IsPositive, Min, IsString } from "class-validator";
 export class CreatePokemonDto {
     @IsInt()
     @IsPositive()
-    @Min(2)
+    @Min(1)
     //
     numero: number | undefined;
     //string min lengt 1
