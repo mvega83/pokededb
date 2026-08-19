@@ -33,8 +33,10 @@ export class PokemonService {
 
   async findOne(term: string) {
     let poke: Pokemon | null = null;
+    let tipoBusqueda: string = '-1';
     //busca por numero
     if (!isNaN(+term)) {
+      tipoBusqueda = 'numero';
       poke = await this.pokemonModel.findOne({ numero: +term }).exec();
     }
 
@@ -42,23 +44,34 @@ export class PokemonService {
     //mongoID
     //busca por id mongo ID
     if (!poke &&isValidObjectId(term)) { //si no encuentra el pokemon y es un id valido de mongo
+      tipoBusqueda = 'mongoID';
       poke = await this.pokemonModel.findById(term);
     }
 
     //Busca por nombre
     if (!poke) {
+      if (tipoBusqueda != '-1')
+        tipoBusqueda = 'nombre ni '+tipoBusqueda;
+      else
+        tipoBusqueda = 'nombre';
+
       poke = await this.pokemonModel.findOne({ nombre: term.toLowerCase().trim() });
     }
 
     if (!poke) 
-      throw new NotFoundException(`No se ha encontrado Pokemon por  "${term}" not found`);
+      throw new NotFoundException(`No se ha encontrado Pokemon por "${tipoBusqueda}" "${term}" not found`);
 
     return poke;
 
   }
 
-  update(term: string, updatePokemonDto: UpdatePokemonDto) {
-    return `This action updates a #${term} pokemon`;
+  async update(term: string, updatePokemonDto: UpdatePokemonDto) {
+    const poke = await this.findOne(term);//busca el pokemon por el termino que se le pase
+    if (updatePokemonDto.nombre) {//si se le pasa un nombre en el dto, lo convierte a minusculas
+      updatePokemonDto.nombre = updatePokemonDto.nombre.toLocaleLowerCase();//convierte a minusculas el nombre del pokemon
+    }
+    await poke.updateOne(updatePokemonDto, { new: true });//actualiza el pokemon con los datos del dto
+    return poke;
   }
 
   remove(term: string) {
