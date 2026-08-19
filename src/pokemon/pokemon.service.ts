@@ -83,8 +83,18 @@ export class PokemonService {
      /*
       const poke = await this.findOne(id);//busca el pokemon por el id que se le pase
       await poke.deleteOne();
+      return {id};
       */
-     return {id};
+
+   //  const result = await this.pokemonModel.findByIdAndDelete(id);//elimina el pokemon por el id que se le pase
+     //elimina el pokemon por el id que se le pase
+
+
+     const {deletedCount}= await this.pokemonModel.deleteOne({_id:id});//elimina el pokemon por el id que se le pase
+     if (deletedCount === 0) {//si no se elimina ningun pokemon, lanza una excepcion de not found
+      throw new NotFoundException(`Pokemon with id "${id}" no encontrado`);
+     }
+     return {deletedCount};//retorna el pokemon eliminado
   }
 
   private handleExceptions(error: any) { // funcion para manejar las excepciones de la base de datos, si es un error de duplicado lanza una excepcion de bad request, si es otro error lanza una excepcion de internal server error
