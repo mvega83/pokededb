@@ -19,11 +19,7 @@ export class PokemonService {
       const pokemono = await this.pokemonModel.create(createPokemonDto);
       return pokemono;
     } catch (error) {
-        if (error.code === 11000) {
-           throw new BadRequestException(`Pokemon existe in db ${JSON.stringify(error.keyValue)}`);
-        }
-      console.log(error);
-      throw new InternalServerErrorException(`Can't create Pokemon - Check server logs`);
+        this.handleExceptions(error);
     }
   }
 
@@ -70,11 +66,35 @@ export class PokemonService {
     if (updatePokemonDto.nombre) {//si se le pasa un nombre en el dto, lo convierte a minusculas
       updatePokemonDto.nombre = updatePokemonDto.nombre.toLocaleLowerCase();//convierte a minusculas el nombre del pokemon
     }
-    await poke.updateOne(updatePokemonDto, { new: true });//actualiza el pokemon con los datos del dto
-    return poke;
+
+///// esto sirve para primero evaluar si por ejemplo en numero que es unico, si se quiere actualizar a un numero que ya existe, para que no se actualice y se lance la excepcion de duplicado
+    try {//actualiza el pokemon con los datos del dto y retorna el pokemon actualizado
+      await poke.updateOne(updatePokemonDto, { new: true });
+      return {"Se ha actualizado el pokemon": {...poke.toJSON(), ...updatePokemonDto}};//retorna el pokemon actualizado
+    }
+    catch (error) {//si hay un error al actualizar el pokemon, lanza una excepcion con el mensaje de error
+       this.handleExceptions(error);
+    }
+    
+    
   }
 
-  remove(term: string) {
-    return `This action removes a #${term} pokemon`;
+  async remove(id:string) {
+     /*
+      const poke = await this.findOne(id);//busca el pokemon por el id que se le pase
+      await poke.deleteOne();
+      */
+     return {id};
+  }
+
+  private handleExceptions(error: any) { // funcion para manejar las excepciones de la base de datos, si es un error de duplicado lanza una excepcion de bad request, si es otro error lanza una excepcion de internal server error
+    if (error.code === 11000) {
+       if (error.code === 11000) {//si el error es por duplicado, lanza una excepcion de bad request con el mensaje de error
+          throw new BadRequestException(`Pokemon existe in db ${JSON.stringify(error.keyValue)}`);
+        }
+        console.log(error);
+        throw new InternalServerErrorException(`No puede actualizar el pokemon - Chequea los logs del servidor`);
+      
+    }
   }
 }
