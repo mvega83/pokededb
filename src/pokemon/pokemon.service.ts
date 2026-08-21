@@ -24,7 +24,14 @@ export class PokemonService {
   }
 
   findAll() {
-    return `This action returns all pokemon`;
+    return this.pokemonModel.find()
+      .limit (2)//limite
+      .skip(10)//salta los primeros 10 registros
+      .sort({//ordena por numero de forma ascendente
+        numero: 1//1 ascendente, -1 descendente
+      })
+      .select('-__v');//excluye el campo __v de la respuesta
+
   }
 
   async findOne(term: string) {
