@@ -4,6 +4,7 @@ import { Model, isValidObjectId } from 'mongoose';
 import { Pokemon } from './entities/pokemon.entity';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { PaginacionDto } from '../common/dto/paginacion.dto';
 
 @Injectable()
 export class PokemonService {
@@ -23,10 +24,12 @@ export class PokemonService {
     }
   }
 
-  findAll() {
+  findAll(paginationDto: PaginacionDto) {
+    const {limite = 10, offset = 0} = paginationDto;
+
     return this.pokemonModel.find()
-      .limit (2)//limite
-      .skip(10)//salta los primeros 10 registros
+      .limit (limite)//limite
+      .skip(offset)//salta los primeros 10 registros
       .sort({//ordena por numero de forma ascendente
         numero: 1//1 ascendente, -1 descendente
       })

@@ -5,9 +5,9 @@ export class PaginacionDto {//parametros de paginacion para la busqueda de pokem
     @IsOptional()
     @IsPositive()
     @Min(1)
-    limite: number;//
+    limite?: number;// ? significa que es opcional, si no se pasa el valor, se tomara el valor por defecto
 
     @IsOptional()
     @IsPositive()
-    offset: number;
+    offset?: number;
 }
